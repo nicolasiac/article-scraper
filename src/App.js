@@ -1,8 +1,8 @@
-import logo from './logo.svg';
-import './App.css';
 import Article from './Article';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+
+import { List } from 'antd';
 
 import { getFirestore, getDoc, setDoc, doc, getDocs, collection } from 'firebase/firestore';
 
@@ -50,12 +50,17 @@ function App() {
           const docRef = doc(db, 'articles', article.id);
           const docSnap = await getDoc(docRef);
 
+          var text = article.title.trim();
+          var title = text.substring(0, text.indexOf('\n'))
+          var description = text.substring(text.indexOf('\n')).trim();
+
           if (docSnap.exists()) {
             console.log('Document data:', docSnap.data());
           } else {
             const newDoc = await setDoc(doc(db, 'articles', article.id), {
-              date: article.date,
-              title: article.title,
+              date: new Date(),
+              title: title,
+              description: description,
               url: article.url,
               id: article.id,
             });
@@ -80,12 +85,20 @@ function App() {
       <button onClick={(e) => _fetchArticles()}>Fetch</button>
       <Article></Article>
       <h4>Articles</h4>
-      {articles.map((article, index) => (
-        <li key={index}>
-          <a href={article.url}>{article.date + ' ' + article.title}</a>
-        </li>
-      ))}
-    </div>
+
+      <List
+        itemLayout="horizontal"
+        dataSource={articles}
+        renderItem={item => (
+          <List.Item>
+            <List.Item.Meta
+              title={<a href={item.url}>{new Date(item.date * 1000) + '-' + item.title}</a>}
+              description={item.description}
+            />
+          </List.Item>
+        )}
+      />
+    </div >
   );
 }
 

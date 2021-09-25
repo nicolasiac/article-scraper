@@ -17,7 +17,7 @@ class Article extends React.Component {
     querySnapshot.forEach(async (docu) => {
       console.log(docu.data());
       console.log(`${docu.id} => ${docu.data()}`);
-      //  await deleteDoc(doc(db, 'articles', docu.id));
+      //await deleteDoc(doc(db, 'articles', docu.id));
     });
   }
 
