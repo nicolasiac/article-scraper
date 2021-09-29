@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react';
 
 import { List } from 'antd';
 
-import { getFirestore, getDoc, setDoc, doc, getDocs, collection } from 'firebase/firestore';
+import {
+  getFirestore,
+  getDoc,
+  setDoc,
+  doc,
+  getDocs,
+  collection,
+  deleteDoc,
+} from 'firebase/firestore';
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
@@ -41,6 +49,11 @@ function App() {
     getArticles();
   }, []);
 
+  var deleteArticle = async function (article) {
+    const db = getFirestore();
+    await deleteDoc(doc(db, 'articles', article.id));
+  };
+
   var _fetchArticles = function () {
     axios
       .get('/api/fetch', null)
@@ -51,7 +64,7 @@ function App() {
           const docSnap = await getDoc(docRef);
 
           var text = article.title.trim();
-          var title = text.substring(0, text.indexOf('\n'))
+          var title = text.substring(0, text.indexOf('\n'));
           var description = text.substring(text.indexOf('\n')).trim();
 
           if (docSnap.exists()) {
@@ -87,18 +100,28 @@ function App() {
       <h4>Articles</h4>
 
       <List
-        itemLayout="horizontal"
+        itemLayout='horizontal'
         dataSource={articles}
-        renderItem={item => (
-          <List.Item>
+        renderItem={(item) => (
+          <List.Item
+            actions={[
+              <button type='button' key='delete' onClick={() => deleteArticle(item)}>
+                delete
+              </button>,
+            ]}
+          >
             <List.Item.Meta
-              title={<a href={item.url}>{new Date(item.date * 1000) + '-' + item.title}</a>}
+              title={
+                <a target='_blank' rel='noreferrer' href={item.url}>
+                  {new Date(item.date * 1000) + '-' + item.title}
+                </a>
+              }
               description={item.description}
             />
           </List.Item>
         )}
       />
-    </div >
+    </div>
   );
 }
 

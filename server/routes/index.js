@@ -44,7 +44,18 @@ router.get('/fetch', async (req, res, next) => {
     });
   });
 
-  var keywords = ['customer', 'paying', 'mrr', 'MRR', 'first customer', '1st customer', 'first client', '1st client'];
+  var keywords = [
+    'customer',
+    'paying',
+    'mrr',
+    'MRR',
+    'arr',
+    'ARR',
+    'first customer',
+    '1st customer',
+    'first client',
+    '1st client',
+  ];
   // element.forEach((item) => console.log(item.title.trim()))
   element = element.filter((anchor) => {
     var exists = false;
