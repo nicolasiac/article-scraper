@@ -56,7 +56,7 @@ function App() {
 
   var _fetchArticles = function () {
     axios
-      .get('/api/fetch', null)
+      .get('https://articlescrappernode.herokuapp.com/fetch', null)
       .then((res) => {
         res.data.forEach(async (article) => {
           const db = getFirestore();
