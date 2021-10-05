@@ -1,8 +1,7 @@
-import Article from './Article';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-import { List } from 'antd';
+import { List, Skeleton } from 'antd';
 
 import {
   getFirestore,
@@ -34,20 +33,22 @@ const app = initializeApp(firebaseConfig);
 
 function App() {
   const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function getArticles() {
-      const db = getFirestore();
-      const querySnapshot = await getDocs(collection(db, 'articles'));
-      var artcls = [];
-      querySnapshot.forEach(async (docu) => {
-        artcls.push(docu.data());
-      });
-
-      setArticles(artcls);
-    }
     getArticles();
   }, []);
+
+  async function getArticles() {
+    const db = getFirestore();
+    const querySnapshot = await getDocs(collection(db, 'articles'));
+    var artcls = [];
+    querySnapshot.forEach(async (docu) => {
+      artcls.push(docu.data());
+    });
+
+    setArticles(artcls);
+  }
 
   var deleteArticle = async function (article) {
     const db = getFirestore();
@@ -55,9 +56,11 @@ function App() {
   };
 
   var _fetchArticles = function () {
+    setLoading(true);
     axios
       .get('https://articlescrappernode.herokuapp.com/fetch', null)
       .then((res) => {
+        setLoading(false);
         res.data.forEach(async (article) => {
           const db = getFirestore();
           const docRef = doc(db, 'articles', article.id);
@@ -68,7 +71,7 @@ function App() {
           var description = text.substring(text.indexOf('\n')).trim();
 
           if (docSnap.exists()) {
-            console.log('Document data:', docSnap.data());
+            //console.log('Document data:', docSnap.data());
           } else {
             const newDoc = await setDoc(doc(db, 'articles', article.id), {
               date: new Date(),
@@ -78,10 +81,11 @@ function App() {
               id: article.id,
             });
             if (newDoc != null) {
-              console.log('Document written with ID: ', newDoc.id);
+              //console.log('Document written with ID: ', newDoc.id);
             }
           }
         });
+        getArticles();
       })
       .catch(function (error) {
         // handle error
@@ -93,35 +97,36 @@ function App() {
   };
 
   return (
-    <div className='App'>
-      <div>Puppeteer</div>
-      <button onClick={(e) => _fetchArticles()}>Fetch</button>
-      <Article></Article>
-      <h4>Articles</h4>
+    <Skeleton active loading={loading} paragraph={{ rows: 5 }}>
+      <div className='App'>
+        <button onClick={(e) => _fetchArticles()}>Fetch</button>
 
-      <List
-        itemLayout='horizontal'
-        dataSource={articles}
-        renderItem={(item) => (
-          <List.Item
-            actions={[
-              <button type='button' key='delete' onClick={() => deleteArticle(item)}>
-                delete
-              </button>,
-            ]}
-          >
-            <List.Item.Meta
-              title={
-                <a target='_blank' rel='noreferrer' href={item.url}>
-                  {new Date(item.date * 1000) + '-' + item.title}
-                </a>
-              }
-              description={item.description}
-            />
-          </List.Item>
-        )}
-      />
-    </div>
+        <h4>Articles</h4>
+
+        <List
+          itemLayout='horizontal'
+          dataSource={articles}
+          renderItem={(item) => (
+            <List.Item
+              actions={[
+                <button type='button' key='delete' onClick={() => deleteArticle(item)}>
+                  delete
+                </button>,
+              ]}
+            >
+              <List.Item.Meta
+                title={
+                  <a target='_blank' rel='noreferrer' href={item.url}>
+                    {new Date(item.date * 1000) + '-' + item.title}
+                  </a>
+                }
+                description={item.description}
+              />
+            </List.Item>
+          )}
+        />
+      </div>
+    </Skeleton>
   );
 }
 
